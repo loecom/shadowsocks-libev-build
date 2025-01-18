@@ -1,0 +1,52 @@
+name: Build Shadowsocks-libev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential autoconf libtool libssl-dev gawk debhelper \
+            dh-systemd init-system-helpers pkg-config asciidoc xmlto apg \
+            libpcre3-dev zlib1g-dev libev-dev libudns-dev libsodium-dev \
+            libc-ares-dev libmbedtls-dev git
+
+      - name: Generate build configuration
+        run: |
+          cd shadowsocks-libev
+          ./autogen.sh
+
+      - name: Configure build
+        run: |
+          cd shadowsocks-libev
+          ./configure --prefix=/usr/local/shadowsocks-libev
+
+      - name: Build Shadowsocks-libev
+        run: |
+          cd shadowsocks-libev
+          make
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts
+          cp shadowsocks-libev/src/ss-* artifacts/
+          tar -czvf shadowsocks-libev-binaries.tar.gz artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: shadowsocks-libev-binaries
+          path: shadowsocks-libev-binaries.tar.gz
