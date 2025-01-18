@@ -27,7 +27,7 @@ jobs:
       - name: Generate build configuration
         run: |
           cd shadowsocks-libev
-          ./autogen.sh
+          ./autogen.sh || autoreconf -fi
 
       - name: Configure build
         run: |
@@ -37,11 +37,13 @@ jobs:
       - name: Build Shadowsocks-libev
         run: |
           cd shadowsocks-libev
+          make clean
           make
 
       - name: Package artifacts
         run: |
           mkdir -p artifacts
+          ls shadowsocks-libev/src/
           cp shadowsocks-libev/src/ss-* artifacts/
           tar -czvf shadowsocks-libev-binaries.tar.gz artifacts
 
